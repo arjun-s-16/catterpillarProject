@@ -30,13 +30,13 @@ function NavBar() {
         <Spacer />
         <Box>
           <Flex alignItems="center">
-            <Button onClick={()=>handleClick("profile")} color="gray" mr={4}>
+            <Button bg="blue.700" onClick={()=>handleClick("profile")} color="yellow" mr={4}>
               Home
             </Button>
-            <Button onClick={()=>handleClick("/inspect")} color="gray" mr={4}>
+            <Button bg="blue.700" onClick={()=>handleClick("/inspect")} color="yellow" mr={4}>
               Inspect
             </Button>
-            <Button onClick={()=>handleClick("/login")} color="gray" mr={4}>
+            <Button bg="blue.700" onClick={()=>handleClick("/login")} color="yellow" mr={4}>
               Logout
             </Button>
             <IconButton

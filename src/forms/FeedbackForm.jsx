@@ -8,9 +8,10 @@ import {
   Button,
   Stack,
   Textarea,
+  Heading,
   Select,
 } from '@chakra-ui/react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
 import DataContext from '../DataContext';
@@ -26,6 +27,9 @@ function FeedbackForm() {
   const [isFormValid, setIsFormValid] = useState(false);
 
   const navigate = useNavigate();
+  
+  const currentPath = useLocation().pathname;
+  const parentPath = currentPath.split('/').slice(0, -1).join('/'); 
 
   const fields = {
     'name': setName,
@@ -113,19 +117,7 @@ function FeedbackForm() {
     console.log('Form submitted:', formData);
     addFormData(formData); // Store form data in context
 
-    let id = generateRandomId(20);
-  };
-
-  const generateRandomId = (length) => {
-    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    const charactersLength = characters.length;
-    let result = '';
-  
-    for (let i = 0; i < length; i++) {
-      result += characters.charAt(Math.floor(Math.random() * charactersLength));
-    }
-  
-    return result;
+    navigate(parentPath);
   };
 
   const generatePdf = () => {
@@ -153,6 +145,9 @@ function FeedbackForm() {
   };
 
   return (
+    <>
+        <Heading mt = "30px" ml="480px">Enter your feedback</Heading>
+
     <Container w="300px" centerContent mt="100px">
       <Box p={4} w="500px" borderWidth="1px" borderRadius="md">
         <form onSubmit={handleSubmit}>
@@ -208,6 +203,7 @@ function FeedbackForm() {
         </form>
       </Box>
     </Container>
+    </>
   );
 }
 

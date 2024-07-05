@@ -7,6 +7,7 @@ import {
   Input,
   Button,
   Stack,
+  Heading,
 } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
 import { jsPDF } from 'jspdf';
@@ -110,7 +111,7 @@ function InspectionDetails() {
       customerName,
     });
 
-    let id = generateRandomId(20);
+    let id = generateRandomId(10);
     navigate("/inspect/"+id);
   };
 
@@ -152,7 +153,10 @@ function InspectionDetails() {
   };
 
   return (
-    <Container w="300px" centerContent mt="100px">
+    <>
+    <Heading mt = "30px" ml="480px">Enter details related to Inspection</Heading>
+
+    <Container centerContent mt="30px">
       <Box p={4} w="500px" borderWidth="1px" borderRadius="md">
         <form onSubmit={handleSubmit}>
           <Stack spacing={3}>
@@ -209,6 +213,7 @@ function InspectionDetails() {
         </form>
       </Box>
     </Container>
+    </>
   );
 }
 

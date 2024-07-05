@@ -9,12 +9,16 @@ import {
   Stack,
   Textarea,
   Select,
+  Heading,
+  IconButton,
+  Flex,
+  Icon,
 } from '@chakra-ui/react';
-import { useNavigate } from 'react-router-dom';
+import { FaMicrophone } from 'react-icons/fa';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
 import DataContext from '../DataContext';
-
 
 function ExteriorForm() {
   const { addFormData } = useContext(DataContext); // Accessing context to store form data
@@ -26,6 +30,9 @@ function ExteriorForm() {
   const [isFormValid, setIsFormValid] = useState(false);
 
   const navigate = useNavigate();
+  
+  const currentPath = useLocation().pathname;
+  const parentPath = currentPath.split('/').slice(0, -1).join('/'); 
 
   const fields = {
     'rustdentdamage': setRustDentDamage,
@@ -107,23 +114,10 @@ function ExteriorForm() {
       "overallSummary": overallSummary
     }
     
-    console.log('Form submitted:',formData);
+    console.log('Form submitted:', formData);
     addFormData(formData);
 
-    let id = generateRandomId(20);
-    navigate("/inspect/"+id);
-  };
-
-  const generateRandomId = (length) => {
-    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    const charactersLength = characters.length;
-    let result = '';
-  
-    for (let i = 0; i < length; i++) {
-      result += characters.charAt(Math.floor(Math.random() * charactersLength));
-    }
-  
-    return result;
+    navigate(parentPath);
   };
 
   const generatePdf = () => {
@@ -150,53 +144,66 @@ function ExteriorForm() {
   };
 
   return (
-    <Container w="300px" centerContent mt="100px">
-      <Box p={4} w="500px" borderWidth="1px" borderRadius="md">
-        <form onSubmit={handleSubmit}>
-          <Stack spacing={3}>
-            <FormControl id="rustDentDamage">
-              <FormLabel>Rust/Dent/Damage to Exterior</FormLabel>
-              <Select
-                value={rustDentDamage}
-                onChange={(e) => setRustDentDamage(e.target.value)}
-              >
-                <option value="">Select</option>
-                <option value="yes">Yes</option>
-                <option value="no">No</option>
-              </Select>
-            </FormControl>
-            <FormControl id="oilLeak">
-              <FormLabel>Oil Leak</FormLabel>
-              <Select
-                value={oilLeak}
-                onChange={(e) => setOilLeak(e.target.value)}
-              >
-                <option value="">Select</option>
-                <option value="yes">Yes</option>
-                <option value="no">No</option>
-              </Select>
-            </FormControl>
-            <FormControl id="overallSummary">
-              <FormLabel>Overall Summary</FormLabel>
-              <Textarea
-                value={overallSummary}
-                onChange={(e) => setOverallSummary(e.target.value)}
-                maxLength={1000}
-              />
-            </FormControl>
-            <Button type="submit" colorScheme="blue" isDisabled={!isFormValid}>
-              Submit
-            </Button>
-            <Button onClick={handleVoiceInput} colorScheme="green">
-              {isRecognizing ? 'Stop Voice Input' : 'Start Voice Input'}
-            </Button>
-            <Button onClick={generatePdf} colorScheme="red" isDisabled={!isFormValid}>
-              Generate PDF
-            </Button>
-          </Stack>
-        </form>
-      </Box>
-    </Container>
+    <Flex direction="column" alignItems="flex-start" p={4} w="100%">
+      <Flex justify="flex-end" w="100%" mb={4}>
+        <IconButton
+          icon={<FaMicrophone />}
+          aria-label={isRecognizing ? 'Stop Voice Input' : 'Start Voice Input'}
+          size="lg"
+          colorScheme={isRecognizing ? 'red' : 'green'}
+          onClick={handleVoiceInput}
+        />
+      </Flex>
+      <Container w="500px">
+        <Box p={4} borderWidth="1px" borderRadius="md">
+          <Heading mb={4}>Enter details related to the Exterior</Heading>
+          <form onSubmit={handleSubmit}>
+            <Stack spacing={3}>
+              <FormControl id="rustDentDamage">
+                <FormLabel>Rust/Dent/Damage to Exterior</FormLabel>
+                <Select
+                  value={rustDentDamage}
+                  onChange={(e) => setRustDentDamage(e.target.value)}
+                >
+                  <option value="">Select</option>
+                  <option value="yes">Yes</option>
+                  <option value="no">No</option>
+                </Select>
+              </FormControl>
+              <FormControl id="oilLeak">
+                <FormLabel>Oil Leak</FormLabel>
+                <Select
+                  value={oilLeak}
+                  onChange={(e) => setOilLeak(e.target.value)}
+                >
+                  <option value="">Select</option>
+                  <option value="yes">Yes</option>
+                  <option value="no">No</option>
+                </Select>
+              </FormControl>
+              <FormControl id="overallSummary">
+                <FormLabel>Overall Summary</FormLabel>
+                <Textarea
+                  value={overallSummary}
+                  onChange={(e) => setOverallSummary(e.target.value)}
+                  maxLength={1000}
+                />
+              </FormControl>
+              <Flex justify="space-between" w="100%">
+                <Stack direction="row">
+                  <Button type="submit" colorScheme="blue" isDisabled={!isFormValid}>
+                    Submit
+                  </Button>
+                  <Button onClick={generatePdf} colorScheme="red" isDisabled={!isFormValid}>
+                    Generate PDF
+                  </Button>
+                </Stack>
+              </Flex>
+            </Stack>
+          </form>
+        </Box>
+      </Container>
+    </Flex>
   );
 }
 

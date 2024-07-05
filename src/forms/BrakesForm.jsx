@@ -9,8 +9,9 @@ import {
   Stack,
   Textarea,
   Select,
+  Heading
 } from '@chakra-ui/react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
 import DataContext from '../DataContext';
@@ -101,6 +102,9 @@ function BrakesForm() {
     setIsRecognizing(!isRecognizing);
   };
 
+  const currentPath = useLocation().pathname;
+  const parentPath = currentPath.split('/').slice(0, -1).join('/'); 
+
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!isFormValid) {
@@ -117,8 +121,7 @@ function BrakesForm() {
     console.log('Form submitted:', formData);
     addFormData(formData);
 
-    let id = generateRandomId(20);
-    navigate("/inspect/"+id);
+    navigate(parentPath); // Navigate to the parent path
   };
 
   const generateRandomId = (length) => {
@@ -159,6 +162,9 @@ function BrakesForm() {
   };
 
   return (
+    <>
+        <Heading mt = "30px" ml="480px">Enter details related to Brakes</Heading>
+
     <Container w="300px" centerContent mt="100px">
       <Box p={4} w="500px" borderWidth="1px" borderRadius="md">
         <form onSubmit={handleSubmit}>
@@ -232,6 +238,7 @@ function BrakesForm() {
         </form>
       </Box>
     </Container>
+    </>
   );
 }
 
