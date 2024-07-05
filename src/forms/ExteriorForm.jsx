@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import {
   Box,
   FormControl,
@@ -7,29 +7,30 @@ import {
   Input,
   Button,
   Stack,
+  Textarea,
+  Select,
 } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
 import DataContext from '../DataContext';
 
-function InspectionDetails() {
-  const [truckSerialNo, setTruckSerialNo] = useState('');
-  const [truckModel, setTruckModel] = useState('');
-  const [dateTime, setDateTime] = useState('');
-  const [catCustomerId, setCatCustomerId] = useState('');
-  const [customerName, setCustomerName] = useState('');
+
+function ExteriorForm() {
+  const { addFormData } = useContext(DataContext); // Accessing context to store form data
+
+  const [rustDentDamage, setRustDentDamage] = useState('');
+  const [oilLeak, setOilLeak] = useState('');
+  const [overallSummary, setOverallSummary] = useState('');
   const [isRecognizing, setIsRecognizing] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
 
   const navigate = useNavigate();
 
   const fields = {
-    'truckserialnumber': setTruckSerialNo, 
-    'truckmodel': setTruckModel,
-    'dateandtime': setDateTime,
-    'catcustomerid': setCatCustomerId,
-    'customername': setCustomerName,
+    'rustdentdamage': setRustDentDamage,
+    'oilleak': setOilLeak,
+    'overallsummary': setOverallSummary,
   };
 
   const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
@@ -45,13 +46,13 @@ function InspectionDetails() {
       const words = transcript.split(' ');
       const value = words.pop(); // Last word as value
       const fieldName = words.join(''); // Rest as field name
-      console.log("Field Name: ${fieldName}, Value: ${value}");
+      console.log(`Field Name: ${fieldName}, Value: ${value}`);
 
       if (fields[fieldName]) {
         fields[fieldName](value);
         validateForm();
       } else {
-        console.error("No matching field found for field name: ${fieldName}");
+        console.error(`No matching field found for field name: ${fieldName}`);
       }
     };
 
@@ -76,14 +77,12 @@ function InspectionDetails() {
 
   useEffect(() => {
     validateForm();
-  }, [truckSerialNo, truckModel, dateTime, catCustomerId, customerName]);
+  }, [rustDentDamage, oilLeak, overallSummary]);
 
   const validateForm = () => {
-    const isValid = truckSerialNo.trim() !== '' &&
-                    truckModel.trim() !== '' &&
-                    dateTime.trim() !== '' &&
-                    catCustomerId.trim() !== '' &&
-                    customerName.trim() !== '';
+    const isValid = rustDentDamage.trim() !== '' &&
+                    oilLeak.trim() !== '' &&
+                    overallSummary.trim() !== '';
     setIsFormValid(isValid);
   };
 
@@ -102,13 +101,14 @@ function InspectionDetails() {
       alert('Please fill all the fields before submitting.');
       return;
     }
-    console.log('Form submitted:', {
-      truckSerialNo,
-      truckModel,
-      dateTime,
-      catCustomerId,
-      customerName,
-    });
+    let formData = {
+      "rustDentDamage": rustDentDamage,
+      "oilLeak": oilLeak,
+      "overallSummary": overallSummary
+    }
+    
+    console.log('Form submitted:',formData);
+    addFormData(formData);
 
     let id = generateRandomId(20);
     navigate("/inspect/"+id);
@@ -135,11 +135,9 @@ function InspectionDetails() {
     const doc = new jsPDF();
     const tableColumn = ["Field", "Value"];
     const tableRows = [
-      ["Truck Serial Number", truckSerialNo],
-      ["Truck Model", truckModel],
-      ["Date and Time", dateTime],
-      ["CAT Customer ID", catCustomerId],
-      ["Customer Name", customerName],
+      ["Rust/Dent/Damage to Exterior", rustDentDamage],
+      ["Oil Leak", oilLeak],
+      ["Overall Summary", overallSummary],
     ];
 
     doc.autoTable({
@@ -156,44 +154,34 @@ function InspectionDetails() {
       <Box p={4} w="500px" borderWidth="1px" borderRadius="md">
         <form onSubmit={handleSubmit}>
           <Stack spacing={3}>
-            <FormControl id="truckSerialNumber">
-              <FormLabel>Truck Serial No</FormLabel>
-              <Input
-                type="text"
-                value={truckSerialNo}
-                onChange={(e) => setTruckSerialNo(e.target.value)}
-              />
+            <FormControl id="rustDentDamage">
+              <FormLabel>Rust/Dent/Damage to Exterior</FormLabel>
+              <Select
+                value={rustDentDamage}
+                onChange={(e) => setRustDentDamage(e.target.value)}
+              >
+                <option value="">Select</option>
+                <option value="yes">Yes</option>
+                <option value="no">No</option>
+              </Select>
             </FormControl>
-            <FormControl id="truckModel">
-              <FormLabel>Truck Model</FormLabel>
-              <Input
-                type="text"
-                value={truckModel}
-                onChange={(e) => setTruckModel(e.target.value)}
-              />
+            <FormControl id="oilLeak">
+              <FormLabel>Oil Leak</FormLabel>
+              <Select
+                value={oilLeak}
+                onChange={(e) => setOilLeak(e.target.value)}
+              >
+                <option value="">Select</option>
+                <option value="yes">Yes</option>
+                <option value="no">No</option>
+              </Select>
             </FormControl>
-            <FormControl id="dateTime">
-              <FormLabel>Date and Time</FormLabel>
-              <Input
-                type="datetime-local"
-                value={dateTime}
-                onChange={(e) => setDateTime(e.target.value)}
-              />
-            </FormControl>
-            <FormControl id="catCustomerId">
-              <FormLabel>CAT Customer ID</FormLabel>
-              <Input
-                type="text"
-                value={catCustomerId}
-                onChange={(e) => setCatCustomerId(e.target.value)}
-              />
-            </FormControl>
-            <FormControl id="customerName">
-              <FormLabel>Customer Name</FormLabel>
-              <Input
-                type="text"
-                value={customerName}
-                onChange={(e) => setCustomerName(e.target.value)}
+            <FormControl id="overallSummary">
+              <FormLabel>Overall Summary</FormLabel>
+              <Textarea
+                value={overallSummary}
+                onChange={(e) => setOverallSummary(e.target.value)}
+                maxLength={1000}
               />
             </FormControl>
             <Button type="submit" colorScheme="blue" isDisabled={!isFormValid}>
@@ -212,4 +200,4 @@ function InspectionDetails() {
   );
 }
 
-export default InspectionDetails;
+export default ExteriorForm;

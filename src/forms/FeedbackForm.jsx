@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import {
   Box,
   FormControl,
@@ -7,29 +7,31 @@ import {
   Input,
   Button,
   Stack,
+  Textarea,
+  Select,
 } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
 import DataContext from '../DataContext';
 
-function InspectionDetails() {
-  const [truckSerialNo, setTruckSerialNo] = useState('');
-  const [truckModel, setTruckModel] = useState('');
-  const [dateTime, setDateTime] = useState('');
-  const [catCustomerId, setCatCustomerId] = useState('');
-  const [customerName, setCustomerName] = useState('');
+function FeedbackForm() {
+  const { addFormData } = useContext(DataContext); // Accessing context to store form data
+
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [rating, setRating] = useState('');
+  const [feedbackMessage, setFeedbackMessage] = useState('');
   const [isRecognizing, setIsRecognizing] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
 
   const navigate = useNavigate();
 
   const fields = {
-    'truckserialnumber': setTruckSerialNo, 
-    'truckmodel': setTruckModel,
-    'dateandtime': setDateTime,
-    'catcustomerid': setCatCustomerId,
-    'customername': setCustomerName,
+    'name': setName,
+    'email': setEmail,
+    'rating': setRating,
+    'feedbackmessage': setFeedbackMessage,
   };
 
   const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
@@ -45,13 +47,13 @@ function InspectionDetails() {
       const words = transcript.split(' ');
       const value = words.pop(); // Last word as value
       const fieldName = words.join(''); // Rest as field name
-      console.log("Field Name: ${fieldName}, Value: ${value}");
+      console.log(`Field Name: ${fieldName}, Value: ${value}`);
 
       if (fields[fieldName]) {
         fields[fieldName](value);
         validateForm();
       } else {
-        console.error("No matching field found for field name: ${fieldName}");
+        console.error(`No matching field found for field name: ${fieldName}`);
       }
     };
 
@@ -76,14 +78,13 @@ function InspectionDetails() {
 
   useEffect(() => {
     validateForm();
-  }, [truckSerialNo, truckModel, dateTime, catCustomerId, customerName]);
+  }, [name, email, rating, feedbackMessage]);
 
   const validateForm = () => {
-    const isValid = truckSerialNo.trim() !== '' &&
-                    truckModel.trim() !== '' &&
-                    dateTime.trim() !== '' &&
-                    catCustomerId.trim() !== '' &&
-                    customerName.trim() !== '';
+    const isValid = name.trim() !== '' &&
+                    email.trim() !== '' &&
+                    rating.trim() !== '' &&
+                    feedbackMessage.trim() !== '';
     setIsFormValid(isValid);
   };
 
@@ -102,16 +103,17 @@ function InspectionDetails() {
       alert('Please fill all the fields before submitting.');
       return;
     }
-    console.log('Form submitted:', {
-      truckSerialNo,
-      truckModel,
-      dateTime,
-      catCustomerId,
-      customerName,
-    });
+
+    let formData = {
+      "name" : name,
+      "email": email, 
+      "rating": rating,
+      "feedbackMessage": feedbackMessage
+    }
+    console.log('Form submitted:', formData);
+    addFormData(formData); // Store form data in context
 
     let id = generateRandomId(20);
-    navigate("/inspect/"+id);
   };
 
   const generateRandomId = (length) => {
@@ -135,11 +137,10 @@ function InspectionDetails() {
     const doc = new jsPDF();
     const tableColumn = ["Field", "Value"];
     const tableRows = [
-      ["Truck Serial Number", truckSerialNo],
-      ["Truck Model", truckModel],
-      ["Date and Time", dateTime],
-      ["CAT Customer ID", catCustomerId],
-      ["Customer Name", customerName],
+      ["Name", name],
+      ["Email", email],
+      ["Rating", rating],
+      ["Feedback Message", feedbackMessage],
     ];
 
     doc.autoTable({
@@ -148,7 +149,7 @@ function InspectionDetails() {
       startY: 10,
     });
 
-    doc.save('output.pdf');
+    doc.save('customer_feedback.pdf');
   };
 
   return (
@@ -156,44 +157,42 @@ function InspectionDetails() {
       <Box p={4} w="500px" borderWidth="1px" borderRadius="md">
         <form onSubmit={handleSubmit}>
           <Stack spacing={3}>
-            <FormControl id="truckSerialNumber">
-              <FormLabel>Truck Serial No</FormLabel>
+            <FormControl id="name">
+              <FormLabel>Name</FormLabel>
               <Input
                 type="text"
-                value={truckSerialNo}
-                onChange={(e) => setTruckSerialNo(e.target.value)}
+                value={name}
+                onChange={(e) => setName(e.target.value)}
               />
             </FormControl>
-            <FormControl id="truckModel">
-              <FormLabel>Truck Model</FormLabel>
+            <FormControl id="email">
+              <FormLabel>Email</FormLabel>
               <Input
-                type="text"
-                value={truckModel}
-                onChange={(e) => setTruckModel(e.target.value)}
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
               />
             </FormControl>
-            <FormControl id="dateTime">
-              <FormLabel>Date and Time</FormLabel>
-              <Input
-                type="datetime-local"
-                value={dateTime}
-                onChange={(e) => setDateTime(e.target.value)}
-              />
+            <FormControl id="rating">
+              <FormLabel>Rating</FormLabel>
+              <Select
+                value={rating}
+                onChange={(e) => setRating(e.target.value)}
+              >
+                <option value="">Select</option>
+                <option value="1">1 - Very Poor</option>
+                <option value="2">2 - Poor</option>
+                <option value="3">3 - Average</option>
+                <option value="4">4 - Good</option>
+                <option value="5">5 - Excellent</option>
+              </Select>
             </FormControl>
-            <FormControl id="catCustomerId">
-              <FormLabel>CAT Customer ID</FormLabel>
-              <Input
-                type="text"
-                value={catCustomerId}
-                onChange={(e) => setCatCustomerId(e.target.value)}
-              />
-            </FormControl>
-            <FormControl id="customerName">
-              <FormLabel>Customer Name</FormLabel>
-              <Input
-                type="text"
-                value={customerName}
-                onChange={(e) => setCustomerName(e.target.value)}
+            <FormControl id="feedbackMessage">
+              <FormLabel>Feedback Message</FormLabel>
+              <Textarea
+                value={feedbackMessage}
+                onChange={(e) => setFeedbackMessage(e.target.value)}
+                maxLength={1000}
               />
             </FormControl>
             <Button type="submit" colorScheme="blue" isDisabled={!isFormValid}>
@@ -212,4 +211,4 @@ function InspectionDetails() {
   );
 }
 
-export default InspectionDetails;
+export default FeedbackForm;
