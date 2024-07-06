@@ -8,12 +8,29 @@ import { Button } from '@chakra-ui/react';
 
 function GeneratePDF() {
   const { formData } = useContext(DataContext);
+
+  const head = {
+    "leftFrontPressure": "Tires",
+    "make": "Battery",
+    "rustDentDamage": "Exterior",
+    "fluidLevel": "Brakes",
+    "rusDentDamage": "Engine",
+    "Name": "Feedback"
+  }
+
   const generateCombinedPdf = () => {
     const doc = new jsPDF();
     const tableColumn = ['Field', 'Value'];
-  
+    
     formData.forEach((data, index) => {
       let tableRows = [];
+  
+      // Extract the first key-value pair for the heading
+      const firstKey = Object.keys(data)[0];
+      const heading = "Report for "+head[firstKey];
+  
+      // Remove the first key-value pair from data
+      delete data[firstKey];
   
       // Iterate over each key-value pair in the current data object
       Object.entries(data).forEach(([key, value]) => {
@@ -25,16 +42,20 @@ function GeneratePDF() {
         tableRows.push(['', '']); // Separator between forms
       }
   
+      // Add heading text
+      doc.setFontSize(16);
+      doc.text(heading, 14, index === 0 ? 10 : doc.previousAutoTable.finalY + 20);
+  
+      // Add table
       doc.autoTable({
         head: [tableColumn],
         body: tableRows,
-        startY: index === 0 ? 10 : doc.previousAutoTable.finalY + 10, // Start position for each table
+        startY: index === 0 ? 20 : doc.previousAutoTable.finalY + 30, // Start position for each table
       });
     });
-  
+    
     doc.save('combined_forms.pdf');
   };
-  
 
   return (
     <div>
